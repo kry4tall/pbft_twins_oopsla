@@ -261,8 +261,8 @@ public class Replica {
         long t = requestMsg.t;
         //如果这条请求已经reply过了，那么就再回复一次reply
         if (reqStats.containsKey(msg) && reqStats.get(msg) == STABLE) {
-            long recTime = msg.receiveTime + netDlyToClis[Client.getCliArrayIndex(c)];
-            Message replyMsg = new ReplyMsg(msg.proposalHash, v, t, c, id, "result", id, c, recTime);
+            long receiveTime = msg.receiveTime + netDlyToClis[Client.getCliArrayIndex(c)];
+            Message replyMsg = new ReplyMsg(msg.proposalHash, v, t, c, id, "result", id, c, receiveTime);
             Simulator.sendMsg(replyMsg, sendTag);
             return;
         }
