@@ -90,21 +90,21 @@ public class Message {
 		{
 			if(needHash(toString())) {
 				int index = toString().indexOf("消息类型");
-				System.out.println(prefix + "当前时间戳:" + sendTime + ",消息将在时间戳:" + receiveTime + "被接收;" + toString().substring(index) + ";Proposal hash:" + proposalHash);
+				System.out.println(prefix + "发送时间戳:" + sendTime + ",消息将在时间戳:" + receiveTime + "被接收;" + toString().substring(index) + ";Proposal hash:" + proposalHash);
 			}
 			else{
 				int index = toString().indexOf("消息类型");
-				System.out.println(prefix + "当前时间戳:" + sendTime + ",消息将在时间戳:" + receiveTime + "被接收;" + toString().substring(index));
+				System.out.println(prefix + "发送时间戳:" + sendTime + ",消息将在时间戳:" + receiveTime + "被接收;" + toString().substring(index));
 			}
 		}
 		else if(tag.contains("Receive")){
 			if(needHash(toString())){
 				int index = toString().indexOf("消息类型");
-				System.out.println(prefix + "当前时间戳:"+ receiveTime +";" + toString().substring(index) + ";Proposal hash:" + proposalHash);
+				System.out.println(prefix + "接收时间戳:"+ receiveTime +";" + toString().substring(index) + ";Proposal hash:" + proposalHash);
 			}
 			else{
 				int index = toString().indexOf("消息类型");
-				System.out.println(prefix + "当前时间戳:"+ receiveTime +";" + toString().substring(index));
+				System.out.println(prefix + "接收时间戳:"+ receiveTime +";" + toString().substring(index));
 			}
 		}
 		else{

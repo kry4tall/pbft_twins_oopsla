@@ -40,6 +40,8 @@ public class Replica {
 
     public int id;                                        //当前节点的id
 
+    public long timestamp; //当前时间戳
+
     public int v;                                        //视图编号
 
     public int n;                                        //消息处理序列号
@@ -86,6 +88,7 @@ public class Replica {
     }
 
     public void msgProcess(Message msg) {
+        timestamp = msg.receiveTime;
         msg.print(receiveTag);
         switch (msg.type) {
             case Message.REQUEST:
@@ -144,6 +147,7 @@ public class Replica {
             return;
         }
         //否则发
+        cm.sendTime = timestamp;
         Simulator.sendMsgToOthers(cm, id, sendTag);
         addMessageToCache(cm);
     }
@@ -166,6 +170,7 @@ public class Replica {
             lastRepNum++;
             setTimer(lastRepNum + 1, time);
             if (requestMsg != null) {
+                replyMsg.sendTime = timestamp;
                 Simulator.sendMsg(replyMsg, sendTag);
                 LastReply llp = lastReplyMap.get(requestMsg.c);
                 if (llp == null) {
@@ -180,6 +185,7 @@ public class Replica {
             if (prePrepareMsg.n % K == 0) {
                 Message checkptMsg = new CheckPointMsg(v, prePrepareMsg.n, lastReplyMap, id, id, id, time);
                 addMessageToCache(checkptMsg);
+                checkptMsg.sendTime = timestamp;
                 Simulator.sendMsgToOthers(checkptMsg, id, sendTag);
             }
         }
@@ -263,6 +269,7 @@ public class Replica {
         if (reqStats.containsKey(msg) && reqStats.get(msg) == STABLE) {
             long receiveTime = msg.receiveTime + netDlyToClis[Client.getCliArrayIndex(c)];
             Message replyMsg = new ReplyMsg(msg.proposalHash, v, t, c, id, "result", id, c, receiveTime);
+            replyMsg.sendTime = timestamp;
             Simulator.sendMsg(replyMsg, sendTag);
             return;
         }
@@ -280,6 +287,7 @@ public class Replica {
                     PrePrepareMsg ppMsg = (PrePrepareMsg) m;
                     if (ppMsg.v == v && ppMsg.i == id && ppMsg.m.equals(msg)) {
                         m.receiveTime = msg.receiveTime;
+                        m.sendTime = timestamp;
                         Simulator.sendMsgToOthers(m, id, sendTag);
                         return;
                     }
@@ -290,6 +298,7 @@ public class Replica {
                 n++;
                 Message prePrepareMsg = new PrePrepareMsg( id + "||" + n,v, n, requestMsg, id, id, id, requestMsg.receiveTime);
                 addMessageToCache(prePrepareMsg);
+                prePrepareMsg.sendTime = timestamp;
                 Simulator.sendMsgToOthers(prePrepareMsg, id, sendTag);
             }
         }
@@ -317,6 +326,7 @@ public class Replica {
         Message prepareMsg = new PrepareMsg(prePrepareMsg.proposalHash, msgv, msgn, d, id, id, id, msg.receiveTime);
         if (isInMsgCache(prepareMsg)) return;
         addMessageToCache(prepareMsg);
+        prepareMsg.sendTime = timestamp;
         Simulator.sendMsgToOthers(prepareMsg, id, sendTag);
     }
 
@@ -359,6 +369,7 @@ public class Replica {
         Map<Integer, Set<Message>> P = computeP();
         Message vm = new ViewChangeMsg(v + 1, h, ss, C, P, id, id, id, msg.receiveTime);
         addMessageToCache(vm);
+        vm.sendTime = timestamp;
         Simulator.sendMsgToOthers(vm, id, sendTag);
     }
 
@@ -404,6 +415,7 @@ public class Replica {
                 Map<String, Set<Message>> VONMap = computeVON();
                 Message nvMsg = new NewViewMsg(v, VONMap.get("V"), VONMap.get("O"), VONMap.get("N"), id, id, id, msg.receiveTime);
                 addMessageToCache(nvMsg);
+                nvMsg.sendTime = timestamp;
                 Simulator.sendMsgToOthers(nvMsg, id, sendTag);
                 //发送所有不在O内的request消息的prePrepare消息
                 Set<Message> reqSet = msgCache.get(Message.REQUEST);
@@ -635,6 +647,7 @@ public class Replica {
 
     public void setTimer(int n, long time) {
         Message timeOutMsg = new TimeOutMsg(v, n, id, id, time + Simulator.TIMEOUT);
+        timeOutMsg.sendTime = timestamp;
         Simulator.sendMsg(timeOutMsg, sendTag);
     }
 

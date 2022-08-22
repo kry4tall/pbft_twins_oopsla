@@ -194,6 +194,7 @@ public class Simulator {
 		for(int i = 0; i < RN; i++) {
 			if(i != id) {
 				Message m = msg.copy(i, msg.receiveTime + netDlys[id][i]);
+				m.sendTime = msg.sendTime;
 				sendMsg(m, tag);
 			}
 		}

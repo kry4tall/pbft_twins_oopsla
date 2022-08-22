@@ -31,6 +31,8 @@ public class Client {
 	public String receiveTag = "CliReceive";
 	
 	public String sendTag = "CliSend";
+
+	public long curTimestamp;
 	
 	public Client(int id, int[] netDlys) {
 		this.id = id;
@@ -41,6 +43,7 @@ public class Client {
 	}
 	
 	public void msgProcess(Message msg) {
+		curTimestamp = msg.receiveTime;
 		msg.print(receiveTag);
 		switch(msg.type) {
 		case Message.REPLY:
@@ -63,6 +66,7 @@ public class Client {
 		//接收者id,新视图轮流分配给replica,如果没有新视图那么就只有第0个replica接收request
 		int priId = v % Simulator.RN;
 		Message requestMsg = new RequestMsg("Message", time, id, id, priId, time + netDlys[priId]);
+		requestMsg.sendTime = curTimestamp;
 		Simulator.sendMsg(requestMsg, sendTag);
 		reqStats.put(time, PROCESSING);
 		reqMsgs.put(time, requestMsg);
@@ -87,8 +91,7 @@ public class Client {
 			reqStats.put(t, STABLE);
 			reqMsgs.remove(t);
 			repMsgs.remove(t);
-			System.out.println("##Stable##当前时间戳:"+ msg.receiveTime +",客户端"+id+"在"+t
-					+"时间请求的消息已经得到了f+1条reply,进入稳态,共耗时" + accTime +"毫秒,此时占用带宽为"+Simulator.inFlyMsgLen+"B");
+			System.out.println("##Stable##当前时间戳:"+ msg.receiveTime +",客户端"+id+"已经得到了f+1条reply,进入稳态,共耗时" + accTime +"毫秒,此时占用带宽为"+Simulator.inFlyMsgLen+"B");
 		}
 	}
 	
@@ -168,6 +171,7 @@ public class Client {
 	
 	public void setTimer(long t, long time) {
 		Message timeoutMsg = new CliTimeOutMsg(t, id, id, time + Simulator.CLITIMEOUT);
-		Simulator.sendMsg(timeoutMsg, "ClientSend");
+		timeoutMsg.sendTime = curTimestamp;
+		Simulator.sendMsg(timeoutMsg, "CliSend");
 	}
 }
