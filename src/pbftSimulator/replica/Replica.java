@@ -163,7 +163,7 @@ public class Replica {
         }
 
         //判断request是否执行完毕:
-        // 1.没有request或cache里没有reply
+        // 1.没有request或request还没有reply
         // 2.请求是最新的
         // 3.请求已经committed
         if ((requestMsg == null || !isInMsgCache(replyMsg)) && prePrepareMsg.n == lastRepNum + 1 && commited(prePrepareMsg)) {
